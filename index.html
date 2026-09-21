@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- Roof Underwriter v2 — multi-system -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roof Underwriter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f3f4f6; --card:#ffffff; --line:#eaecf0; --line2:#dcdfe5; --field:#f7f8fa;
+    --ink:#0f172a; --ink2:#334155; --mut:#64748b; --faint:#94a3b8;
+    --accent:#4338ca; --accentbg:#eef2ff;
+    --good:#067647; --goodbg:#ecfdf3; --goodbd:#abefc6; --goodtint:#f6fef9;
+    --warn:#b54708; --warnbg:#fffaeb; --warnbd:#fedf89; --warntint:#fffcf5;
+    --bad:#b42318; --badbg:#fef3f2; --badbd:#fecdca; --badtint:#fffbfa;
+    --r:14px; --r2:9px;
+    --f:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --sh:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.04);
+  }
+  *{box-sizing:border-box;margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--f);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  button,input,select{font-family:inherit}
+  .tnum{font-variant-numeric:tabular-nums}
+  .container{max-width:1120px;margin:0 auto;padding:22px 22px 64px}
+
+  .topbar{background:var(--card);border-bottom:1px solid var(--line)}
+  .topbar .in{max-width:1120px;margin:0 auto;padding:13px 22px;display:flex;align-items:center;justify-content:space-between}
+  .logo{display:flex;align-items:center;gap:11px}
+  .logo .ic{width:30px;height:30px;border-radius:8px;background:var(--ink);display:flex;align-items:center;justify-content:center}
+  .logo .nm{font-weight:600;font-size:15px;letter-spacing:-.01em}
+  .tb-acts{display:flex;gap:9px;align-items:center}
+  .btn{border:1px solid var(--line2);background:var(--card);color:var(--ink2);padding:9px 15px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;transition:.12s}
+  .btn:hover{background:var(--field)}
+  .btn.dark{background:var(--ink);border-color:var(--ink);color:#fff}
+  .btn.dark:hover{background:#1e293b}
+  .btn.admin{display:flex;align-items:center;gap:7px}
+  .btn.admin.on{background:var(--accentbg);border-color:#c7d2fe;color:var(--accent)}
+  .btn.admin svg{width:14px;height:14px}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
+  .ch{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line)}
+  .ch h2{font-size:13px;font-weight:600;color:var(--ink)}
+  .ch .sub{font-size:13px;color:var(--mut);font-variant-numeric:tabular-nums}
+
+  /* deal header */
+  .dealhead{padding:18px 22px}
+  .title{border:0;outline:0;background:none;font-size:24px;font-weight:700;letter-spacing:-.02em;color:var(--ink);width:100%;padding:2px 0;margin-bottom:14px}
+  .title::placeholder{color:var(--faint)}
+  .config{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;padding-top:14px;border-top:1px solid var(--line)}
+  .mfld{display:flex;flex-direction:column;gap:6px}
+  .mfld label{font-size:11px;font-weight:600;color:var(--mut)}
+  .mwrap,.sel{display:flex;align-items:center;background:var(--field);border:1px solid var(--line2);border-radius:8px;padding:0 10px}
+  .mwrap:focus-within,.sel:focus-within{border-color:var(--accent);background:var(--card);box-shadow:0 0 0 3px rgba(67,56,202,.1)}
+  .mwrap input{border:0;outline:0;background:none;font-size:14px;color:var(--ink);padding:8px 2px;width:46px;text-align:right}
+  .mwrap .suf{color:var(--faint);font-size:13px}
+  .sel select{border:0;outline:0;background:none;font-size:14px;color:var(--ink);padding:8px 22px 8px 2px;cursor:pointer;appearance:none}
+  .sel{position:relative}
+  .sel::after{content:"";position:absolute;right:11px;top:50%;width:7px;height:7px;border-right:2px solid var(--faint);border-bottom:2px solid var(--faint);transform:translateY(-65%) rotate(45deg);pointer-events:none}
+  .seg{display:inline-flex;background:var(--field);border:1px solid var(--line2);border-radius:8px;padding:3px}
+  .seg button{border:0;background:none;color:var(--mut);padding:7px 12px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap}
+  .seg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(16,24,40,.1);font-weight:600}
+
+  /* summary */
+  .summary{margin-top:18px;display:flex;align-items:stretch;flex-wrap:wrap}
+  .s-net{padding:20px 24px;min-width:240px;border-right:1px solid var(--line);display:flex;flex-direction:column;justify-content:center}
+  .s-net.good{background:var(--goodtint)}.s-net.warn{background:var(--warntint)}.s-net.bad{background:var(--badtint)}
+  .s-net .lab{font-size:13px;color:var(--mut);font-weight:500}
+  .s-net .net{font-size:40px;font-weight:700;letter-spacing:-.025em;line-height:1.05;margin-top:6px}
+  .s-net .row{display:flex;align-items:center;gap:10px;margin-top:9px}
+  .s-net .mg{font-size:13px;color:var(--mut);font-weight:500}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:3px 10px;border-radius:16px;border:1px solid transparent}
+  .pill .d{width:7px;height:7px;border-radius:50%;background:currentColor}
+  .pill.good{background:var(--goodbg);color:var(--good);border-color:var(--goodbd)}
+  .pill.warn{background:var(--warnbg);color:var(--warn);border-color:var(--warnbd)}
+  .pill.bad{background:var(--badbg);color:var(--bad);border-color:var(--badbd)}
+  .pill.neutral{background:var(--field);color:var(--mut);border-color:var(--line2)}
+  .s-stats{flex:1;display:grid;grid-template-columns:repeat(3,1fr);align-items:center}
+  @media(max-width:680px){.s-stats{grid-template-columns:1fr 1fr}.s-net{border-right:0;border-bottom:1px solid var(--line);width:100%}}
+  .st{padding:16px 20px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .st:nth-child(3n){border-right:0}
+  .s-stats .st:nth-child(n+4){border-bottom:0}
+  .st .k{font-size:12px;color:var(--mut);font-weight:500}
+  .st .v{font-size:18px;font-weight:600;letter-spacing:-.01em;margin-top:3px}
+  .st .qin{display:flex;align-items:center;background:var(--card);border:1px solid var(--line2);border-radius:8px;padding:0 9px;margin-top:4px}
+  .st .qin:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(67,56,202,.1)}
+  .st .qin .pre{color:var(--faint);font-size:15px}
+  .st .qin input{border:0;outline:0;background:none;font-size:18px;font-weight:600;color:var(--ink);padding:7px 2px;width:100%}
+
+  /* lock note */
+  .locknote{margin-top:14px;display:none;align-items:center;gap:9px;background:var(--field);border:1px solid var(--line2);color:var(--mut);padding:10px 14px;border-radius:10px;font-size:13px;font-weight:500}
+  .locknote.show{display:flex}
+  .locknote svg{width:15px;height:15px;flex:0 0 auto}
+
+  .work{margin-top:18px;display:grid;grid-template-columns:minmax(0,440px) 1fr;gap:18px;align-items:start}
+  @media(max-width:820px){.work{grid-template-columns:1fr}}
+  .stack > * + *{margin-top:18px}
+
+  .lhead,.lrow{display:grid;grid-template-columns:1fr 50px 78px 82px 22px;gap:6px;align-items:center}
+  .lhead{padding:8px 18px 5px}
+  .lhead span{font-size:10.5px;color:var(--faint);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+  .lhead .r{text-align:right}
+  .lrow{padding:2px 18px;border-top:1px solid var(--line)}
+  #laborRows .lrow:first-child,#matRows .lrow:first-child{border-top:0}
+  .lrow .nm{border:0;outline:0;background:none;font-size:13.5px;color:var(--ink);padding:8px 0;width:100%;border-bottom:1px solid transparent}
+  .lrow .nm:focus{border-bottom-color:var(--line2)}
+  .lrow .nm::placeholder{color:var(--faint)}
+  .lrow .mini{display:flex;align-items:center;background:var(--field);border:1px solid var(--line2);border-radius:7px;padding:0 7px}
+  .lrow .mini:focus-within{border-color:var(--accent);background:var(--card);box-shadow:0 0 0 2.5px rgba(67,56,202,.1)}
+  .lrow .mini .pre{color:var(--faint);font-size:12px;display:flex;align-items:center}
+  .lrow .mini input{border:0;outline:0;background:none;font-size:13px;color:var(--ink2);padding:7px 0;width:100%;text-align:right}
+  .lrow .mini.lk{background:#f1f1f4;border-color:#e3e4e9}
+  .lrow .mini.lk input{color:var(--faint);cursor:not-allowed}
+  .lrow .mini.lk .pre svg{width:11px;height:11px}
+  .lrow .amt{font-size:13px;font-weight:500;text-align:right}
+  .lrow .amt.zero{color:var(--faint);font-weight:400}
+  .lrow .del{border:0;background:none;color:var(--faint);font-size:16px;cursor:pointer;border-radius:5px;padding:2px}
+  .lrow .del:hover{color:var(--bad);background:var(--badbg)}
+  .ghdr{display:flex;align-items:center;justify-content:space-between;padding:9px 18px;background:var(--accentbg);border-top:1px solid var(--line)}
+  .ghdr span{font-size:11.5px;font-weight:700;color:var(--accent);letter-spacing:.02em}
+  .ghdr .grm{border:0;background:none;color:var(--accent);font-size:11.5px;font-weight:600;cursor:pointer;opacity:.8}
+  .ghdr .grm:hover{opacity:1;text-decoration:underline}
+  .addrow{margin:8px 18px 4px;width:calc(100% - 36px);border:1px dashed var(--line2);background:none;color:var(--mut);padding:9px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer}
+  .addrow:hover{border-color:var(--accent);color:var(--accent)}
+  .csum{display:flex;align-items:center;justify-content:space-between;padding:11px 18px;border-top:1px solid var(--line)}
+  .csum .k{font-size:13px;color:var(--mut)}
+  .csum .v{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
+  .csum.s2{padding:7px 18px}.csum.s2 .k,.csum.s2 .v{color:var(--mut);font-weight:500;font-size:13px}
+
+  .tgt{padding:16px 18px}
+  .tgt .top{display:flex;align-items:center;justify-content:space-between}
+  .tgt .top label{font-size:13px;color:var(--ink2);font-weight:500}
+  .tgt .top .pc{font-size:15px;font-weight:600}
+  input[type=range]{width:100%;margin:13px 0 8px;accent-color:var(--accent);height:5px}
+  .tgt .out{display:flex;align-items:center;justify-content:space-between;padding-top:9px;border-top:1px solid var(--line)}
+  .tgt .out .k{font-size:13px;color:var(--mut)}
+  .tgt .out .q{font-size:18px;font-weight:700}
+  .tgt .hint{font-size:12px;color:var(--faint);text-align:right;margin-top:2px}
+  .tgt .apply{margin-top:12px;width:100%;background:var(--accent);color:#fff;border:0;padding:10px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
+  .tgt .apply:hover{background:#3730a3}
+  .prow{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-top:1px solid var(--line)}
+  .prow:first-of-type{border-top:0}
+  .prow .l{display:flex;align-items:center;gap:11px}
+  .prow .pc{font-size:13px;font-weight:600;color:var(--accent);width:34px}
+  .prow .nm{font-size:13px;color:var(--mut)}
+  .prow .amt{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
+
+  .modal{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:center;justify-content:center;padding:18px;z-index:50}
+  .modal.open{display:flex}
+  .mcard{background:var(--card);border-radius:14px;width:100%;max-width:360px;padding:22px;box-shadow:0 20px 40px rgba(16,24,40,.25)}
+  .mcard h3{font-size:16px;font-weight:600;margin-bottom:5px}
+  .mcard p{font-size:13px;color:var(--mut);margin-bottom:14px}
+  .mcard .pinin{display:flex;align-items:center;background:var(--field);border:1px solid var(--line2);border-radius:9px;padding:0 12px;margin-bottom:14px}
+  .mcard .pinin input{border:0;outline:0;background:none;font-size:18px;letter-spacing:.2em;padding:11px 2px;width:100%}
+  .mcard .mbtns{display:flex;gap:9px}
+  .mcard .mbtns button{flex:1;padding:10px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--line2);background:var(--card)}
+  .mcard .mbtns .go{background:var(--accent);border-color:var(--accent);color:#fff}
+  .mcard .err{color:var(--bad);font-size:12px;margin-bottom:10px;display:none}
+
+  .drawer{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:flex-start;justify-content:center;padding:64px 18px;z-index:40}
+  .drawer.open{display:flex}
+  .dcard{background:var(--card);border-radius:14px;width:100%;max-width:540px;max-height:78vh;overflow:auto;box-shadow:0 20px 40px rgba(16,24,40,.2)}
+  .dh{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--card)}
+  .dh h3{font-size:15px;font-weight:600}.dh button{border:0;background:none;font-size:22px;color:var(--mut);cursor:pointer}
+  .saved{padding:8px}
+  .si{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 14px;border-radius:9px}
+  .si:hover{background:var(--field)}
+  .si .nm{font-size:14px;font-weight:500;cursor:pointer}.si .d{font-size:12px;color:var(--faint);margin-top:2px;cursor:pointer}
+  .si .right{display:flex;align-items:center;gap:13px}
+  .si .net{font-size:13px;font-weight:600;cursor:pointer;font-variant-numeric:tabular-nums}
+  .si .x{border:0;background:none;color:var(--faint);font-size:15px;cursor:pointer;padding:3px 6px;border-radius:5px}
+  .si .x:hover{color:var(--bad);background:var(--badbg)}
+  .empty{padding:40px;text-align:center;color:var(--faint);font-size:14px}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:9px;font-size:13px;font-weight:500;opacity:0;transition:.22s;pointer-events:none;z-index:60}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media print{body{background:#fff}.topbar,.tb-acts,.addrow,.del,.apply,.drawer,.modal{display:none}.card{box-shadow:none;break-inside:avoid}}
+</style>
+
+<div class="topbar"><div class="in">
+  <div class="logo"><div class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M3 11 L12 4 L21 11" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 10 V20 H19 V10" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="nm">Roof Underwriter</div></div>
+  <div class="tb-acts">
+    <button class="btn admin" id="adminBtn"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 11 V8 a4 4 0 0 1 8 0 V11" stroke="currentColor" stroke-width="2"/></svg><span id="adminLbl">Admin</span></button>
+    <button class="btn" id="newBtn">New</button><button class="btn" id="openBtn">Saved</button><button class="btn" id="printBtn">Print</button><button class="btn dark" id="saveBtn">Save deal</button>
+  </div>
+</div></div>
+
+<div class="container">
+  <div class="card dealhead">
+    <input id="jobName" class="title" placeholder="Untitled job">
+    <div class="config">
+      <div class="mfld"><label>Roof system</label><div class="seg" id="typeSeg"></div></div>
+      <div class="mfld"><label>Project type</label><div class="seg" id="ptypeSeg"><button data-p="rr" class="on">R&amp;R</button><button data-p="new">New construction</button></div></div>
+      <div class="mfld"><label>Second system</label><div class="sel"><select id="secondSel"></select></div></div>
+      <div class="mfld"><label>Squares</label><div class="mwrap"><input id="squares" type="number" min="0" step="0.5" value="0"></div></div>
+      <div class="mfld"><label>Commission</label><div class="mwrap"><input id="comm" type="number" min="0" step="0.5" value="10"><span class="suf">%</span></div></div>
+    </div>
+    <div class="locknote" id="lockNote"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 11 V8 a4 4 0 0 1 8 0 V11" stroke="currentColor" stroke-width="2"/></svg><span id="lockNoteTxt"></span></div>
+  </div>
+
+  <div class="card summary">
+    <div class="s-net neutral" id="netCard">
+      <div class="lab">Net profit</div>
+      <div class="net tnum" id="netBig">$0</div>
+      <div class="row"><span class="mg" id="netPctBig">— margin</span><span class="pill neutral" id="healthPill"><span class="d"></span>Enter a quote</span></div>
+    </div>
+    <div class="s-stats">
+      <div class="st"><div class="k">Client quote</div><div class="qin"><span class="pre">$</span><input id="quote" class="tnum" type="number" min="0" step="50" value="0"></div></div>
+      <div class="st"><div class="k">Quote / square</div><div class="v tnum" id="sQuoteSq">—</div></div>
+      <div class="st"><div class="k">Hard cost</div><div class="v tnum" id="sHard">$0</div></div>
+      <div class="st"><div class="k">Gross profit</div><div class="v tnum" id="sGross">$0</div></div>
+      <div class="st"><div class="k">Commission</div><div class="v tnum" id="sComm">$0</div></div>
+      <div class="st"><div class="k">Profit / square</div><div class="v tnum" id="sProfitSq">—</div></div>
+    </div>
+  </div>
+
+  <div class="work">
+    <div class="stack">
+      <div class="card">
+        <div class="ch"><h2>Labor</h2><div class="sub" id="laborSum">$0.00</div></div>
+        <div class="lhead"><span>Item</span><span class="r">Qty</span><span class="r">Unit</span><span class="r">Amount</span><span></span></div>
+        <div id="laborRows"></div>
+        <button class="addrow" data-add="labor">+ Add labor line</button>
+      </div>
+      <div class="card">
+        <div class="ch"><h2>Price to a margin</h2></div>
+        <div class="tgt">
+          <div class="top"><label>Target net margin</label><span class="pc"><span id="tgtPct">22</span>%</span></div>
+          <input type="range" id="tgtSlider" min="0" max="45" value="22" step="1">
+          <div class="out"><span class="k">Quote needed</span><span class="q tnum" id="tgtQuote">$0</span></div>
+          <div class="hint" id="tgtSqHint">— / sq</div>
+          <button class="apply" id="applyTgt">Use this quote</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><h2>Payment schedule</h2></div>
+        <div class="prow"><div class="l"><span class="pc">50%</span><span class="nm">Deposit / start</span></div><span class="amt tnum" id="pay50">$0</span></div>
+        <div class="prow"><div class="l"><span class="pc">30%</span><span class="nm">Material drop</span></div><span class="amt tnum" id="pay30">$0</span></div>
+        <div class="prow"><div class="l"><span class="pc">20%</span><span class="nm">Completion</span></div><span class="amt tnum" id="pay20">$0</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ch"><h2>Materials</h2><div class="sub" id="matTotal">$0.00</div></div>
+      <div class="lhead"><span>Item</span><span class="r">Qty</span><span class="r">Unit</span><span class="r">Amount</span><span></span></div>
+      <div id="matRows"></div>
+      <button class="addrow" data-add="mat">+ Add material line</button>
+      <div class="csum s2"><span class="k">Subtotal</span><span class="v tnum" id="matSub">$0.00</span></div>
+      <div class="csum s2"><span class="k">Sales tax (8.5%)</span><span class="v tnum" id="matTax">$0.00</span></div>
+      <div class="csum"><span class="k">Materials w/ tax</span><span class="v tnum" id="matTotal2">$0.00</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="pinModal"><div class="mcard">
+  <h3>Admin access</h3><p>Enter the admin code to edit locked labor rates and material prices.</p>
+  <div class="err" id="pinErr">Incorrect code.</div>
+  <div class="pinin"><input id="pinInput" type="password" inputmode="numeric" placeholder="••••"></div>
+  <div class="mbtns"><button id="pinCancel">Cancel</button><button class="go" id="pinGo">Unlock</button></div>
+</div></div>
+
+<div class="drawer" id="drawer"><div class="dcard"><div class="dh"><h3>Saved deals</h3><button id="closeDrawer">×</button></div><div class="saved" id="savedList"></div></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const money=n=>'$'+(Math.round(n)).toLocaleString('en-US');
+const money2=n=>'$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const pct=n=>(n).toFixed(1)+'%';
+const ADMIN_PIN='';     // empty = click Admin to unlock instantly. Set a code (e.g. '1234') to require it for your reps.
+const TAX_RATE=0.085;   // sales tax always applied (change here if your rate differs)
+
+/* Saved deals live in the host storage API when one exists, otherwise in this
+   browser's localStorage so the Save / Saved buttons work on a static host. */
+const store=(window.storage && typeof window.storage.get==='function') ? window.storage : {
+  async set(k,v){localStorage.setItem(k,v);return true;},
+  async get(k){const v=localStorage.getItem(k);return v===null?null:{value:v};},
+  async list(prefix){const keys=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.indexOf(prefix)===0)keys.push(k);}return{keys};},
+  async delete(k){localStorage.removeItem(k);return true;}
+};
+
+const SYSTEMS={
+  shingle:{label:'Shingle',
+    labor:[['Shingle install labor / sq',0,110],['Walk deck',0,1000],['Plywood labor / sheet',0,4],['Solar un/re-install',0,200],['Dump & gas',1,500]],
+    mat:[['GAF Timberline HDZ shingles / sq',0,125],['GAF ridge cap / 33ft',0,86.25],['GAF starter strip / bundle',0,84.85],['SecureGrip 30 underlayment',0,100],['Metal underlayment',0,125],['Underlayment nails',0,24.60],['Shingle coil nails 1-1/4',0,55.80],['Staples (overhang)',0,41.50],['Base sheet 2sq black',0,130],['Cap sheet 1sq',0,130],['Flashings',0,30],['Drip edge 10ft',0,8],['Plastic roof cement 5gal',0,74],['Pipe jacks',0,20],['Valley metal 10ft',0,40],['Fascia trim 1x4 16ft',0,30],['Misc',0,500]]},
+  tile:{label:'Tile',
+    labor:[['Tile install labor / sq',0,120],['Tile loader / sq',0,25],['Metal',0,250],['Solar un/re-install',0,200],['Dump & gas',1,800]],
+    mat:[['Eagle tile / sq',0,120],['Tile trim / ln ft',0,5],['Ply40 / tile seal underlayment',0,55],['Furring strips',0,14],['Valley metals 10ft',0,44],['Drip edge 2x2 10ft',0,8],['Birdstop / eave riser',0,10],['Pipejacks',0,15],['Other flashings',0,15],['Plastic cap nails',0,25],['Nails',0,55],['Hip & ridge blocker',0,100],['Plastic cement 4.75gal',0,75],['Base sheet 2sq',0,130],['Cap sheet 1sq',0,130],['Ice & water barrier',0,120],['Misc',0,500]]},
+  foam:{label:'Foam',
+    labor:[['SPF foam application / sq',0,150],['Surface prep & clean / sq',0,40],['Solar un/re-install',0,200],['Dump & gas',1,400]],
+    mat:[['Spray foam 2.5lb / sq',0,120],['Base coat / sq',0,60],['Top coat + granules / sq',0,50],['Primer',0,50],['Caulking / sealant',0,25],['Patch / repair',0,40],['Misc',0,500]]},
+  metal:{label:'Metal',
+    labor:[['Metal panel install / sq',0,150],['Tear-off / sq',0,60],['Trim & flashing labor / ln ft',0,8],['Solar un/re-install',0,200],['Dump & gas',1,500]],
+    mat:[['Metal panels (PBR / standing seam) / sq',0,120],['Ridge cap / hip',0,15],['Trim & rake flashing / ln ft',0,10],['Roof-to-wall flashing / ln ft',0,10],['Drip edge / eave',0,8],['Zee bar',0,10],['Inside/outside foam closures',0,5],['Painted screws / box',0,40],['Butyl tape / sealant',0,25],['Synthetic underlayment / sq',0,100],['Ice & water barrier',0,120],['Pipe jacks',0,20],['Misc',0,500]]}
+};
+const ORDER=['shingle','tile','foam','metal'];
+
+let state={primary:'shingle',ptype:'rr',secondary:null,labor:[],mat:[],admin:false};
+const matLocked=()=>!state.admin;                              // material prices: always admin-only
+const laborLocked=()=>state.ptype==='new' && !state.admin;     // labor rates: locked on new construction
+
+function buildPrimary(){
+  state.labor=SYSTEMS[state.primary].labor.map(([n,q,p])=>[n,q,p,'main']);
+  state.mat=SYSTEMS[state.primary].mat.map(([n,q,p])=>[n,q,p,'main']);
+  state.secondary=null;
+}
+function applySecondary(sys){
+  state.labor=state.labor.filter(r=>r[3]==='main');
+  state.mat=state.mat.filter(r=>r[3]==='main');
+  state.secondary=sys||null;
+  if(sys){
+    SYSTEMS[sys].labor.forEach(([n,q,p])=>state.labor.push([n,q,p,sys]));
+    SYSTEMS[sys].mat.forEach(([n,q,p])=>state.mat.push([n,q,p,sys]));
+  }
+}
+
+function renderSeg(){
+  $('typeSeg').innerHTML=ORDER.map(k=>`<button data-t="${k}" class="${k===state.primary?'on':''}">${SYSTEMS[k].label}</button>`).join('');
+  $('typeSeg').querySelectorAll('button').forEach(b=>b.onclick=()=>setPrimary(b.dataset.t));
+}
+function renderSecondSel(){
+  const opts=['<option value="">None</option>'].concat(ORDER.filter(k=>k!==state.primary).map(k=>`<option value="${k}" ${state.secondary===k?'selected':''}>+ ${SYSTEMS[k].label}</option>`));
+  $('secondSel').innerHTML=opts.join('');
+}
+function lockSvg(){return '<svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="#94a3b8" stroke-width="2.4"/><path d="M8 11 V8.5 a4 4 0 0 1 8 0 V11" stroke="#94a3b8" stroke-width="2.4"/></svg>';}
+
+function rowHTML(kind,i,r){
+  const lk = kind==='labor' ? laborLocked() : matLocked();
+  return `<div class="lrow" data-k="${kind}" data-i="${i}">
+    <input class="nm" value="${(r[0]||'').replace(/"/g,'&quot;')}" placeholder="Item name">
+    <div class="mini"><input class="q" type="number" step="0.5" value="${r[1]||''}" placeholder="0"></div>
+    <div class="mini ${lk?'lk':''}"><span class="pre">${lk?lockSvg():'$'}</span><input class="u" type="number" step="0.01" value="${r[2]||''}" placeholder="0" ${lk?'readonly':''}></div>
+    <div class="amt ${r[1]*r[2]?'':'zero'}">${money2(r[1]*r[2])}</div>
+    <button class="del">×</button></div>`;
+}
+function listHTML(arr,kind){
+  let html='',last='main';
+  arr.forEach((r,i)=>{
+    const g=r[3]||'main';
+    if(g!=='main' && g!==last){html+=`<div class="ghdr"><span>+ ${SYSTEMS[g].label} add-on</span><button class="grm" data-g="${g}">Remove</button></div>`;}
+    last=g;
+    html+=rowHTML(kind,i,r);
+  });
+  return html;
+}
+function render(){
+  $('laborRows').innerHTML=listHTML(state.labor,'labor');
+  $('matRows').innerHTML=listHTML(state.mat,'mat');
+  const showNote=!state.admin;
+  $('lockNote').classList.toggle('show',showNote);
+  if(showNote)$('lockNoteTxt').textContent=state.ptype==='new'
+    ? 'Material and labor prices are locked for new construction — only Admin can edit unit prices.'
+    : 'Material prices are locked — only Admin can edit them.';
+  bind();calc();
+}
+function bind(){
+  document.querySelectorAll('.lrow').forEach(row=>{
+    const k=row.dataset.k,i=+row.dataset.i,a=state[k];
+    row.querySelector('.nm').oninput=e=>{a[i][0]=e.target.value};
+    row.querySelector('.q').oninput=e=>{a[i][1]=parseFloat(e.target.value)||0;rtot(row,a[i]);calc()};
+    const u=row.querySelector('.u');
+    if(u && !u.readOnly) u.oninput=e=>{a[i][2]=parseFloat(e.target.value)||0;rtot(row,a[i]);calc()};
+    row.querySelector('.del').onclick=()=>{a.splice(i,1);if(!a.length)a.push(['',0,0,'main']);render()};
+  });
+  document.querySelectorAll('.grm').forEach(b=>b.onclick=()=>{applySecondary(null);renderSecondSel();render();});
+}
+function rtot(row,r){const t=row.querySelector('.amt');t.textContent=money2(r[1]*r[2]);t.classList.toggle('zero',!(r[1]*r[2]));}
+
+function calc(){
+  const sq=parseFloat($('squares').value)||0, commR=(parseFloat($('comm').value)||0)/100;
+  const laborSum=state.labor.reduce((s,r)=>s+r[1]*r[2],0);
+  const matSub=state.mat.reduce((s,r)=>s+r[1]*r[2],0);
+  const matTaxAmt=matSub*TAX_RATE, matTotal=matSub+matTaxAmt, hardCost=laborSum+matTotal;
+  $('laborSum').textContent=money2(laborSum);
+  $('matSub').textContent=money2(matSub);$('matTax').textContent=money2(matTaxAmt);
+  $('matTotal').textContent=money2(matTotal);$('matTotal2').textContent=money2(matTotal);
+  const quote=parseFloat($('quote').value)||0;
+  const gross=quote-hardCost, comm=quote*commR, net=gross-comm, netPct=quote>0?net/quote*100:0;
+  $('sHard').textContent=money(hardCost);$('sGross').textContent=money(gross);$('sComm').textContent=money(comm);
+  $('sQuoteSq').textContent=sq>0?money(quote/sq):'—';
+  $('sProfitSq').textContent=sq>0?money(net/sq):'—';
+  $('netBig').textContent=money(net);$('netPctBig').textContent=quote>0?pct(netPct)+' margin':'— margin';
+  let cls,txt;
+  if(quote<=0){cls='neutral';txt='Enter a quote'}
+  else if(net<0){cls='bad';txt='Losing money'}
+  else if(netPct<15){cls='bad';txt='Thin margin'}
+  else if(netPct<22){cls='warn';txt='Workable'}
+  else{cls='good';txt='Healthy'}
+  const pill=$('healthPill');pill.className='pill '+cls;pill.innerHTML='<span class="d"></span>'+txt;
+  $('netCard').className='s-net '+(quote<=0?'neutral':cls);
+  $('netBig').style.color=quote<=0?'var(--ink)':(cls==='bad'?'var(--bad)':cls==='warn'?'var(--warn)':'var(--good)');
+  $('pay50').textContent=money(quote*0.5);$('pay30').textContent=money(quote*0.3);$('pay20').textContent=money(quote*0.2);
+  const t=(parseFloat($('tgtSlider').value)||0)/100;$('tgtPct').textContent=$('tgtSlider').value;
+  const denom=(1-commR)-t;
+  if(denom>0){const need=hardCost/denom;$('tgtQuote').textContent=money(need);$('tgtSqHint').textContent=sq>0?money(need/sq)+' / sq':'set squares for $/sq';window._need=need;}
+  else{$('tgtQuote').textContent='—';$('tgtSqHint').textContent='target too high for commission';window._need=0;}
+  window._net=net;window._netPct=netPct;
+}
+
+function setPrimary(sys){
+  state.primary=sys;buildPrimary();renderSeg();renderSecondSel();render();
+}
+function setSecondary(sys){applySecondary(sys||null);render();}
+function setPtype(p){state.ptype=p;$('ptypeSeg').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.p===p));render();}
+
+$('ptypeSeg').querySelectorAll('button').forEach(b=>b.onclick=()=>setPtype(b.dataset.p));
+$('secondSel').onchange=e=>setSecondary(e.target.value);
+$('quote').addEventListener('input',calc);['squares','comm'].forEach(id=>$(id).addEventListener('input',calc));
+$('tgtSlider').addEventListener('input',calc);
+$('applyTgt').onclick=()=>{if(window._need>0){$('quote').value=Math.round(window._need);calc();toast('Quote set to '+money(window._need));}};
+document.querySelectorAll('.addrow').forEach(b=>b.onclick=()=>{state[b.dataset.add==='labor'?'labor':'mat'].push(['',0,0,'main']);render();});
+$('newBtn').onclick=()=>{$('jobName').value='';$('squares').value=0;$('quote').value=0;setPtype('rr');setPrimary(state.primary);toast('New deal');};
+$('printBtn').onclick=()=>window.print();
+
+/* admin */
+function setAdmin(on){state.admin=on;$('adminBtn').classList.toggle('on',on);$('adminLbl').textContent=on?'Admin on':'Admin';render();}
+$('adminBtn').onclick=()=>{
+  if(state.admin){setAdmin(false);toast('Pricing locked');}
+  else if(!ADMIN_PIN){setAdmin(true);toast('Pricing unlocked — you can edit prices now');}
+  else {$('pinErr').style.display='none';$('pinInput').value='';$('pinModal').classList.add('open');setTimeout(()=>$('pinInput').focus(),50);}
+};
+$('pinCancel').onclick=()=>$('pinModal').classList.remove('open');
+$('pinGo').onclick=()=>{ if($('pinInput').value===ADMIN_PIN){$('pinModal').classList.remove('open');setAdmin(true);toast('Admin unlocked');} else {$('pinErr').style.display='block';} };
+$('pinInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('pinGo').click();});
+
+let tT;function toast(m){const e=$('toast');e.textContent=m;e.classList.add('show');clearTimeout(tT);tT=setTimeout(()=>e.classList.remove('show'),1800);}
+
+/* save / load */
+function snapshot(){return{name:$('jobName').value||'Untitled',primary:state.primary,ptype:state.ptype,secondary:state.secondary,squares:$('squares').value,comm:$('comm').value,quote:$('quote').value,labor:state.labor,mat:state.mat,net:window._net||0,netPct:window._netPct||0,ts:Date.now()};}
+$('saveBtn').onclick=async()=>{const s=snapshot();const key='estimate:'+((s.name.toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,40))||'untitled')+'-'+Date.now().toString(36);
+  try{await store.set(key,JSON.stringify(s));toast('Saved “'+s.name+'”');}catch(e){toast('Could not save');}};
+$('openBtn').onclick=async()=>{await renderSaved();$('drawer').classList.add('open');};
+$('closeDrawer').onclick=()=>$('drawer').classList.remove('open');
+$('drawer').onclick=e=>{if(e.target===$('drawer'))$('drawer').classList.remove('open');};
+async function renderSaved(){const list=$('savedList');list.innerHTML='<div class="empty">Loading…</div>';
+  let keys=[];try{const r=await store.list('estimate:');keys=r&&r.keys?r.keys:[];}catch(e){keys=[];}
+  if(!keys.length){list.innerHTML='<div class="empty">No saved deals yet. Build one and hit “Save deal”.</div>';return;}
+  const items=[];for(const k of keys){try{const v=await store.get(k);if(v&&v.value)items.push([k,JSON.parse(v.value)]);}catch(e){}}
+  items.sort((a,b)=>b[1].ts-a[1].ts);
+  list.innerHTML=items.map(([k,s])=>{const col=s.netPct<15?'var(--bad)':s.netPct<22?'var(--warn)':'var(--good)';const d=new Date(s.ts);const sec=s.secondary?(' + '+SYSTEMS[s.secondary].label):'';
+    return `<div class="si" data-k="${k}"><div><div class="nm">${s.name}</div><div class="d">${SYSTEMS[s.primary]?SYSTEMS[s.primary].label:s.primary}${sec} · ${s.ptype==='new'?'New constr.':'R&R'} · ${s.squares||0} sq</div></div>
+    <div class="right"><span class="net" style="color:${col}">${money(s.net||0)} · ${(s.netPct||0).toFixed(0)}%</span><button class="x">🗑️</button></div></div>`;}).join('');
+  list.querySelectorAll('.si').forEach(el=>{const k=el.dataset.k;
+    el.querySelector('.nm').onclick=()=>loadSnap(k);el.querySelector('.d').onclick=()=>loadSnap(k);el.querySelector('.net').onclick=()=>loadSnap(k);
+    el.querySelector('.x').onclick=async ev=>{ev.stopPropagation();try{await store.delete(k);}catch(e){}renderSaved();};});}
+async function loadSnap(key){try{const v=await store.get(key);if(!v||!v.value)return;const s=JSON.parse(v.value);
+  state.primary=s.primary||'shingle';state.ptype=s.ptype||'rr';state.secondary=s.secondary||null;
+  state.labor=s.labor.map(r=>[r[0],r[1],r[2],r[3]||'main']);state.mat=s.mat.map(r=>[r[0],r[1],r[2],r[3]||'main']);
+  $('jobName').value=s.name==='Untitled'?'':s.name;$('squares').value=s.squares;$('comm').value=s.comm;$('quote').value=s.quote;
+  renderSeg();renderSecondSel();$('ptypeSeg').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.p===state.ptype));
+  render();$('drawer').classList.remove('open');toast('Loaded “'+s.name+'”');}catch(e){toast('Could not load');}}
+
+/* boot */
+renderSeg();buildPrimary();renderSecondSel();render();
+</script>
+</html>
